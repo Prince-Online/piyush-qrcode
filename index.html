@@ -1,0 +1,483 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaming UPI QR Code Generator</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .app-container {
+        width: 100%;
+        max-width: 500px;
+        background: rgba(25, 25, 35, 0.95);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+    }
+    
+    .header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+        text-shadow: 0 0 10px rgba(81, 200, 255, 0.5);
+    }
+    
+    .subtitle {
+        color: #a0a0ef;
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+    
+    .input-container {
+        margin-bottom: 25px;
+        position: relative;
+    }
+    
+    .input-label {
+        display: block;
+        color: #fff;
+        margin-bottom: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .input-field {
+        width: 100%;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(81, 200, 255, 0.2);
+    }
+    
+    .input-field:focus {
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 0 15px rgba(81, 200, 255, 0.3);
+        border-color: rgba(81, 200, 255, 0.6);
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 12px rgba(106, 17, 203, 0.3);
+    }
+    
+    .btn:hover {
+        background: linear-gradient(135deg, #7b21db, #3585fc);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(106, 17, 203, 0.4);
+    }
+    
+    .btn:active {
+        transform: translateY(0);
+    }
+    
+    .btn i {
+        margin-right: 8px;
+    }
+    
+    .qr-container {
+        display: none;
+        background: rgba(30, 30, 45, 0.85);
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+        margin-top: 20px;
+        border: 1px solid rgba(81, 200, 255, 0.2);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .qr-wrapper {
+        background: linear-gradient(125deg, #ff00cc, #3333ff, #00ccff);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        overflow: hidden;
+        justify-content: center;
+        height: 450px;
+        width: 300px;
+    }
+    
+    .qr-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, 
+            rgba(255, 255, 255, 0.1) 25%, 
+            transparent 25%, 
+            transparent 50%, 
+            rgba(255, 255, 255, 0.1) 50%, 
+            rgba(255, 255, 255, 0.1) 75%, 
+            transparent 75%, 
+            transparent);
+        background-size: 8px 8px;
+        z-index: 1;
+        animation: animatedBackground 30s linear infinite;
+    }
+    
+    @keyframes animatedBackground {
+        0% { background-position: 0 0; }
+        100% { background-position: 100px 100px; }
+    }
+    
+    .qr-inner {
+        background: #fff;
+        padding: 15px;
+        border-radius: 6px;
+        position: relative;
+        z-index: 2;
+        display: flex;
+    }
+    
+    #qrcode {
+        margin: 0 auto;
+        max-width: 100%;
+        height: auto;
+    }
+    
+    #qrcode canvas {
+        width: 100%;
+        height: auto;
+    }
+    
+    .qr-info {
+        color: #fff;
+        margin-top: 15px;
+    }
+    
+    .qr-info p {
+        margin: 5px 0;
+    }
+    
+    .qr-label {
+        font-weight: bold;
+        color: #a0a0ef;
+        margin-right: 5px;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .download-btn {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 4px 12px rgba(17, 153, 142, 0.3);
+    }
+    
+    .download-btn:hover {
+        background: linear-gradient(135deg, #10887d, #45ff8b);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(17, 153, 142, 0.4);
+    }
+    
+    .download-btn i {
+        margin-right: 8px;
+    }
+    
+    .glow {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: radial-gradient(circle at 50% 50%, 
+            rgba(81, 200, 255, 0.2), 
+            rgba(81, 200, 255, 0.1), 
+            rgba(81, 200, 255, 0) 70%);
+        pointer-events: none;
+        z-index: -1;
+    }
+    
+    .gaming-elements {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: -1;
+        overflow: hidden;
+    }
+    
+    .gaming-element {
+        position: absolute;
+        opacity: 0.2;
+        animation: float 6s infinite ease-in-out;
+    }
+    
+    .gaming-element:nth-child(1) {
+        top: 10%;
+        left: 5%;
+        animation-delay: 0s;
+    }
+    
+    .gaming-element:nth-child(2) {
+        top: 60%;
+        right: 8%;
+        animation-delay: 1s;
+    }
+    
+    .gaming-element:nth-child(3) {
+        bottom: 10%;
+        left: 15%;
+        animation-delay: 2s;
+    }
+    
+    .gaming-element:nth-child(4) {
+        top: 20%;
+        right: 15%;
+        animation-delay: 3s;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+        100% { transform: translateY(0) rotate(0deg); }
+    }
+    
+    .error-msg {
+        color: #ff6b6b;
+        font-size: 0.9rem;
+        margin-top: 8px;
+        display: none;
+    }
+    
+    @media (max-width: 600px) {
+        .app-container {
+            padding: 20px;
+        }
+        
+        .title {
+            font-size: 1.7rem;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="app-container">
+        <div class="header">
+            <h1 class="title">Gaming QR Generator</h1>
+            <p class="subtitle">Generate UPI Payment QR in Gaming Style</p>
+        </div>
+        
+        <div class="input-container">
+            <label class="input-label" for="amount">Enter Amount (₹)</label>
+            <input type="number" id="amount" class="input-field" placeholder="Enter amount" min="1">
+            <p class="error-msg" id="error-msg">Please enter a valid amount</p>
+        </div>
+        
+        <button class="btn" id="generate-btn">
+            <i class="fas fa-qrcode"></i> Generate QR Code
+        </button>
+        
+        <div class="qr-container" id="qr-container">
+            <div class="qr-wrapper" id="qr-download-area">
+                <div class="qr-inner">
+                    <div id="qrcode"></div>
+                </div>
+                <div class="qr-info">
+                    <p><span class="qr-label">Name:</span> Piyush Mahto</p>
+                    <p><span class="qr-label">UPI ID:</span> battlepiyush@fam</p>
+                    <p><span class="qr-label">Amount:</span> ₹<span id="display-amount"></span></p>
+                </div>
+            </div>
+            <button class="download-btn" id="download-btn">
+                <i class="fas fa-download"></i> Download QR Code
+            </button>
+        </div>
+        
+        <div class="glow"></div>
+        <div class="gaming-elements">
+            <div class="gaming-element">
+                <i class="fas fa-gamepad" style="font-size: 2rem; color: rgba(255, 255, 255, 0.6);"></i>
+            </div>
+            <div class="gaming-element">
+                <i class="fas fa-headset" style="font-size: 2rem; color: rgba(255, 255, 255, 0.6);"></i>
+            </div>
+            <div class="gaming-element">
+                <i class="fas fa-trophy" style="font-size: 2rem; color: rgba(255, 255, 255, 0.6);"></i>
+            </div>
+            <div class="gaming-element">
+                <i class="fas fa-keyboard" style="font-size: 2rem; color: rgba(255, 255, 255, 0.6);"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const generateBtn = document.getElementById('generate-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const amountInput = document.getElementById('amount');
+        const qrContainer = document.getElementById('qr-container');
+        const displayAmount = document.getElementById('display-amount');
+        const errorMsg = document.getElementById('error-msg');
+        let qrcode;
+        
+        generateBtn.addEventListener('click', function() {
+            const amount = amountInput.value.trim();
+            
+            if (amount === '' || parseFloat(amount) <= 0) {
+                errorMsg.style.display = 'block';
+                qrContainer.style.display = 'none';
+                return;
+            }
+            
+            errorMsg.style.display = 'none';
+            displayAmount.textContent = amount;
+            
+            const qrcodeElement = document.getElementById('qrcode');
+            qrcodeElement.innerHTML = '';
+            
+            const upiLink = `upi://pay?pa=battlepiyush@fam&pn=Piyush%20Mahto&am=${amount}&cu=INR`;
+            
+            qrcode = new QRCode(qrcodeElement, {
+                text: upiLink,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            qrContainer.style.display = 'block';
+            
+            const colors = [
+                { dark: '#000000', light: '#ffffff' },
+                { dark: '#0a0a25', light: '#ffffff' },
+                { dark: '#6a11cb', light: '#ffffff' },
+                { dark: '#24243e', light: '#ffffff' }
+            ];
+            
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            setTimeout(() => {
+                const canvas = qrcodeElement.querySelector('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Add gaming style to QR code
+                const qrImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                ctx.putImageData(qrImage, 0, 0);
+                
+                // Add subtle gaming border glow
+                ctx.shadowColor = '#51c8ff';
+                ctx.shadowBlur = 15;
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = 'rgba(81, 200, 255, 0.7)';
+                ctx.strokeRect(0, 0, canvas.width, canvas.height);
+                
+                // Add gaming corner elements
+                ctx.shadowBlur = 0;
+                const cornerSize = canvas.width / 10;
+                
+                // Top-left corner
+                ctx.fillStyle = '#6a11cb';
+                ctx.beginPath();
+                ctx.moveTo(0, cornerSize);
+                ctx.lineTo(cornerSize, 0);
+                ctx.lineTo(0, 0);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Top-right corner
+                ctx.beginPath();
+                ctx.moveTo(canvas.width - cornerSize, 0);
+                ctx.lineTo(canvas.width, cornerSize);
+                ctx.lineTo(canvas.width, 0);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Bottom-left corner
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - cornerSize);
+                ctx.lineTo(cornerSize, canvas.height);
+                ctx.lineTo(0, canvas.height);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Bottom-right corner
+                ctx.beginPath();
+                ctx.moveTo(canvas.width - cornerSize, canvas.height);
+                ctx.lineTo(canvas.width, canvas.height - cornerSize);
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.closePath();
+                ctx.fill();
+            }, 100);
+        });
+        
+        downloadBtn.addEventListener('click', function() {
+            const downloadArea = document.getElementById('qr-download-area');
+            
+            html2canvas(downloadArea).then(function(canvas) {
+                const link = document.createElement('a');
+                link.download = `UPI_QR_${displayAmount.textContent}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 1.0);
+                link.click();
+            });
+        });
+    });
+</script>
